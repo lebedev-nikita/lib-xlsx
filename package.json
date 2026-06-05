@@ -1,0 +1,27 @@
+{
+  "name": "@lebedevna/xlsx",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@types/node": "^25.9.1",
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "package.json",
+    "package-lock.json"
+  ]
+}
