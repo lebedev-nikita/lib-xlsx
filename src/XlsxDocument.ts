@@ -1,6 +1,7 @@
 import exceljs from "exceljs";
 import { Sheet } from "./types.js";
 import { Buffer } from "node:buffer";
+import { PassThrough, Readable } from "node:stream";
 
 export class XlsxDocument {
   constructor(private sheets: Sheet[]) {}
@@ -15,6 +16,15 @@ export class XlsxDocument {
     const wb = new exceljs.stream.xlsx.WorkbookWriter({ filename: name, useStyles: true });
     await this.writeData(wb);
     await wb.commit();
+  }
+
+  renderToStream(): Readable {
+    const stream = new PassThrough();
+    const wb = new exceljs.stream.xlsx.WorkbookWriter({ stream, useStyles: true });
+    void this.writeData(wb)
+      .then(() => wb.commit())
+      .catch((err) => stream.destroy(err));
+    return stream;
   }
 
   private async writeData(wb: exceljs.Workbook) {

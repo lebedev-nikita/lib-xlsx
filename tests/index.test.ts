@@ -24,6 +24,14 @@ async function readWorksheet(input: string | Buffer, sheetname: string) {
   return ws;
 }
 
+async function streamToBuffer(stream: Readable) {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}
+
 describe("DataSheet", () => {
   const WORKSHEET_NAME = "my datasheet";
   const ELEMS = [1, 2, 3, 4, 5, 6];
@@ -440,6 +448,38 @@ describe("XlsxDocument", () => {
 
     const doc = new XlsxDocument([sheet]);
     const buffer = await doc.renderToBuffer();
+
+    const ws = await readWorksheet(buffer, WORKSHEET_NAME);
+
+    expect(ws.getCell(1, 1).value).toBe("Первая подгруппа");
+    expect(ws.getCell(1, 2).value).toBe("Вторая подгруппа");
+    expect(ws.getCell(1, 3).value).toBe("Третья подгруппа");
+
+    for (let i = 1; i < ELEMS.length; i++) {
+      const elem = ELEMS[i]!;
+      expect(ws.getCell(i + 2, 1).value).toBe(elem);
+      expect(ws.getCell(i + 2, 2).value).toBe(elem * 2);
+      expect(ws.getCell(i + 2, 3).value).toBe(elem * 3);
+    }
+  });
+
+  test("renderToStream", async () => {
+    const sheet = new DataSheet(WORKSHEET_NAME, {
+      elems: ELEMS,
+      headers: [
+        column("first", "Первая подгруппа"),
+        column("second", "Вторая подгруппа"),
+        column("third", "Третья подгруппа"),
+      ],
+      renderRow(elem, ctx) {
+        ctx.setValue("first", elem);
+        ctx.setValue("third", elem * 3);
+        ctx.setValue("second", elem * 2);
+      },
+    });
+
+    const doc = new XlsxDocument([sheet]);
+    const buffer = await streamToBuffer(doc.renderToStream());
 
     const ws = await readWorksheet(buffer, WORKSHEET_NAME);
 
