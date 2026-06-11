@@ -2,6 +2,8 @@ import exceljs from "exceljs";
 import { Sheet } from "./types.js";
 import { Buffer } from "node:buffer";
 import { PassThrough, Readable } from "node:stream";
+import { mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
 
 export class XlsxDocument {
   constructor(private sheets: Sheet[]) {}
@@ -13,6 +15,7 @@ export class XlsxDocument {
   }
 
   async renderToFile(name: string) {
+    await mkdir(dirname(name), { recursive: true });
     const wb = new exceljs.stream.xlsx.WorkbookWriter({ filename: name, useStyles: true });
     await this.writeData(wb);
     await wb.commit();
