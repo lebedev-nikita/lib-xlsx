@@ -30,7 +30,7 @@ export class Group<TColumnId extends string> implements HeaderItem<TColumnId> {
 
   constructor(config: {
     label: string;
-    children: Group<TColumnId>[];
+    children: HeaderItem<TColumnId>[];
     /** @default 1 */
     rowSpan?: number;
   }) {
